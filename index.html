@@ -227,9 +227,17 @@ pre{
 <!-- SEARCH MODAL -->
 <div class="modal" id="searchModal">
   <div class="modal-sheet">
-    <div class="close" onclick="closeSearch()">Close</div>
+    <div class="close" onclick="closeSearch()">✕ Close</div>
     <input type="text" id="searchInput" placeholder="Search nearby business..." />
     <div id="searchResults"></div>
+  </div>
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal" id="detailsModal">
+  <div class="modal-sheet">
+    <div class="close" onclick="closeDetails()">✕ Close</div>
+    <div id="detailsContent"></div>
   </div>
 </div>
 
@@ -308,14 +316,14 @@ function render(){
   currentPlaces = allPlaces.slice(0,displayCount);
 
   document.getElementById("list").innerHTML=
-    currentPlaces.map((p)=>`
-      <div class="card">
+    currentPlaces.map((p,i)=>`
+      <div class="card" onclick="showDetails(${i}, 'nearby')">
         <div>
           <h3>${escapeHtml(p.BusinessName)}</h3>
           <div class="meta">
             ${p.distance.toFixed(2)} miles • 
             ${escapeHtml(p.BusinessType)} • 
-            Rating: ${escapeHtml(p.AddressLine2)}
+            ${escapeHtml(p.AddressLine2)}
           </div>
           ${DEBUG ? `<pre>${escapeHtml(JSON.stringify(p,null,2))}</pre>` : ``}
         </div>
@@ -347,17 +355,33 @@ navigator.geolocation.getCurrentPosition(pos=>{
 });
 
 /* SEARCH */
+let searchResults = [];
+
 document.getElementById("openSearch").onclick=()=>{
   document.getElementById("searchModal").classList.add("active");
+  document.getElementById("searchInput").focus();
 };
 
 function closeSearch(){
   document.getElementById("searchModal").classList.remove("active");
+  document.getElementById("searchInput").value = '';
+  document.getElementById("searchResults").innerHTML = '';
 }
+
+// Close modal when clicking outside
+document.getElementById("searchModal").onclick=(e)=>{
+  if(e.target.id === "searchModal"){
+    closeSearch();
+  }
+};
 
 document.getElementById("searchInput").addEventListener("input", async e=>{
   const value=e.target.value.trim();
-  if(!value) return;
+  
+  if(!value){
+    document.getElementById("searchResults").innerHTML = '';
+    return;
+  }
 
   const res=await fetch(
     `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(value)}&pageSize=20`,
@@ -365,13 +389,13 @@ document.getElementById("searchInput").addEventListener("input", async e=>{
   );
   const data=await res.json();
 
-  const filtered=data.establishments
+  searchResults = data.establishments
     .filter(p=>ALLOWED.has(p.BusinessType))
     .slice(0,5);
 
   document.getElementById("searchResults").innerHTML=
-    filtered.map(p=>`
-      <div class="card">
+    searchResults.map((p,i)=>`
+      <div class="card" onclick="showDetails(${i}, 'search')">
         <div>
           <h3>${escapeHtml(p.BusinessName)}</h3>
           <div class="meta">${escapeHtml(p.BusinessType)} • Rating: ${escapeHtml(p.RatingValue)}</div>
@@ -380,6 +404,76 @@ document.getElementById("searchInput").addEventListener("input", async e=>{
       </div>
     `).join("");
 });
+
+/* DETAILS MODAL */
+function closeDetails(){
+  document.getElementById("detailsModal").classList.remove("active");
+}
+
+document.getElementById("detailsModal").onclick=(e)=>{
+  if(e.target.id === "detailsModal"){
+    closeDetails();
+  }
+};
+
+function showDetails(index, source){
+  const p = source === 'search' ? searchResults[index] : currentPlaces[index];
+  
+  // Calculate distance if not already available (for search results)
+  if(!p.distance && p.geocode?.latitude){
+    p.distance = distance(userLat, userLon, p.geocode.latitude, p.geocode.longitude);
+  }
+  
+  // Format the rating date
+  let ratingDateText = 'Not available';
+  if(p.RatingDate){
+    const date = new Date(p.RatingDate);
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    ratingDateText = date.toLocaleDateString('en-GB', options);
+  }
+  
+  document.getElementById("detailsContent").innerHTML=`
+    <div style="text-align:center; margin-bottom:24px;">
+      <img class="badge" src="${badge(p.RatingValue)}" style="width:120px;">
+    </div>
+    
+    <div style="margin-bottom:24px;">
+      <h3 style="margin:0 0 8px 0; font-size:24px; text-align:center;">${escapeHtml(p.BusinessName)}</h3>
+      <div style="text-align:center; font-size:14px; color:var(--muted);">${escapeHtml(p.BusinessType)}</div>
+    </div>
+    
+    <div style="background:var(--glass); border:1px solid var(--stroke); border-radius:16px; padding:20px; margin-bottom:16px;">
+      <div style="font-size:14px; line-height:1.8;">
+        <div style="margin-bottom:12px;">
+          <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Address</div>
+          <div>${escapeHtml(p.AddressLine1 || '')}</div>
+          ${p.AddressLine2 ? `<div>${escapeHtml(p.AddressLine2)}</div>` : ''}
+          ${p.AddressLine3 ? `<div>${escapeHtml(p.AddressLine3)}</div>` : ''}
+          ${p.AddressLine4 ? `<div>${escapeHtml(p.AddressLine4)}</div>` : ''}
+          <div>${escapeHtml(p.PostCode || '')}</div>
+        </div>
+        
+        ${p.distance ? `
+          <div style="margin-bottom:12px;">
+            <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Distance</div>
+            <div>${p.distance.toFixed(2)} miles from your location</div>
+          </div>
+        ` : ''}
+        
+        <div>
+          <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Last Inspection</div>
+          <div>${ratingDateText}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Close search modal if open
+  closeSearch();
+  
+  // Open details modal
+  document.getElementById("detailsModal").classList.add("active");
+}
 
 // Floating logo animation
 const logo = document.querySelector('.logo');
