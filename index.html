@@ -151,7 +151,7 @@ const PAGE_SIZE=200;
 let page=1;
 let userLat,userLon;
 let allPlaces=[];
-let displayCount=15;
+let displayCount=20;
 let currentPlaces=[];
 
 const ALLOWED=new Set([
@@ -190,7 +190,7 @@ async function fetchNextPage(){
   showLoader(true);
 
   const res=await fetch(
-    `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&pageSize=${PAGE_SIZE}&pageNumber=${page}&sortOptionKey=RatingValue&sortDirection=asc`,
+    `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&pageSize=${PAGE_SIZE}&pageNumber=${page}`,
     {headers:{"x-api-version":"2"}}
   );
 
@@ -226,7 +226,7 @@ function render(){
           <div class="meta">
             ${p.distance.toFixed(2)} miles • 
             ${escapeHtml(p.BusinessType)} • 
-            Rating: ${escapeHtml(p.RatingValue)}
+            ${escapeHtml(p.AddressLine2)}
           </div>
 
           ${DEBUG ? `
