@@ -1,17 +1,12 @@
+<!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Dirty Burgers</title>
 
 <meta name="theme-color" content="#0ea5e9" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Dirty Burgers" />
-
 <link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="icons/icon-192.png" />
-
-<meta name="theme-color" content="#0ea5e9" />
 
 <style>
 :root{
@@ -28,14 +23,12 @@
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  font-size:16px;
   background:radial-gradient(circle at 20% 0%,#0ea5e922,transparent 60%),
              radial-gradient(circle at 80% 10%,#22c55e22,transparent 60%),
              var(--bg);
   color:var(--text);
 }
 
-/* HEADER */
 header{
   padding:24px 22px 20px;
   backdrop-filter:blur(20px);
@@ -58,9 +51,7 @@ header{
   gap:14px;
 }
 
-.logo{
-  font-size:38px;
-}
+.logo{ font-size:38px; }
 
 h1{
   margin:0;
@@ -78,10 +69,7 @@ h1{
   cursor:pointer;
 }
 
-/* CONTENT */
-main{
-  padding:26px 22px 60px;
-}
+main{ padding:26px 22px 60px; }
 
 .card{
   background:var(--glass);
@@ -93,28 +81,17 @@ main{
   box-shadow:0 20px 45px rgba(0,0,0,.45);
   display:flex;
   justify-content:space-between;
-  align-items:center;
+  align-items:flex-start;
   gap:16px;
   cursor:pointer;
 }
 
-.card h3{
-  margin:0;
-  font-size:18px;
-  font-weight:600;
-}
+.card h3{ margin:0; font-size:18px; font-weight:600; }
 
-.meta{
-  margin-top:8px;
-  font-size:14px;
-  color:var(--muted);
-}
+.meta{ margin-top:8px; font-size:14px; color:var(--muted); }
 
-.badge{
-  width:100px;
-}
+.badge{ width:100px; }
 
-/* LOAD MORE */
 .load-more{
   margin-top:10px;
   padding:16px;
@@ -126,7 +103,6 @@ main{
   font-weight:600;
 }
 
-/* BURGER LOADER */
 .loader{
   display:none;
   text-align:center;
@@ -143,52 +119,11 @@ main{
   50%{transform:translateY(-18px);}
 }
 
-/* MODALS */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.7);
-  backdrop-filter:blur(10px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s ease;
-  z-index:50;
-}
-
-.modal.active{
-  opacity:1;
-  pointer-events:auto;
-}
-
-.modal-sheet{
-  width:90%;
-  max-width:520px;
-  background:#0d111b;
-  border-radius:28px;
-  padding:26px;
-  border:1px solid var(--stroke);
-  box-shadow:0 30px 60px rgba(0,0,0,.6);
-}
-
-.close{
-  text-align:right;
-  font-size:14px;
-  margin-bottom:14px;
-  cursor:pointer;
-  color:var(--muted);
-}
-
-.modal input{
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background:rgba(255,255,255,.05);
-  color:white;
-  margin-bottom:16px;
+pre{
+  white-space:pre-wrap;
+  font-size:12px;
+  opacity:.7;
+  margin-top:12px;
 }
 </style>
 </head>
@@ -200,38 +135,18 @@ main{
       <div class="logo">🍔</div>
       <h1>Dirty Burgers</h1>
     </div>
-    <div class="search-btn" id="openSearch">Search</div>
   </div>
 </header>
 
 <main>
   <div id="list"></div>
-
-  <div class="loader" id="loader">
-    <div class="burger">🍔</div>
-  </div>
-
+  <div class="loader" id="loader"><div class="burger">🍔</div></div>
   <div class="load-more" id="loadMoreBtn">Load More</div>
 </main>
 
-<!-- DETAIL MODAL -->
-<div class="modal" id="detailModal">
-  <div class="modal-sheet">
-    <div class="close" onclick="closeDetail()">Close</div>
-    <div id="detailContent"></div>
-  </div>
-</div>
-
-<!-- SEARCH MODAL -->
-<div class="modal" id="searchModal">
-  <div class="modal-sheet">
-    <div class="close" onclick="closeSearch()">Close</div>
-    <input type="text" id="searchInput" placeholder="Search nearby business..." />
-    <div id="searchResults"></div>
-  </div>
-</div>
-
 <script>
+const DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
+
 const PAGE_SIZE=200;
 let page=1;
 let userLat,userLon;
@@ -267,12 +182,6 @@ function badge(r){
   return !isNaN(n)?`images/fhrs_${n}_en-gb.svg`:`images/fhrs_exempt_en-gb.svg`;
 }
 
-function address(p){
-  return [p.AddressLine1,p.AddressLine2,p.AddressLine3,p.PostCode]
-    .filter(Boolean)
-    .join(", ");
-}
-
 function showLoader(show){
   document.getElementById("loader").style.display=show?"block":"none";
 }
@@ -281,19 +190,26 @@ async function fetchNextPage(){
   showLoader(true);
 
   const res=await fetch(
-    `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&pageSize=${PAGE_SIZE}&pageNumber=${page}`,
+    `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&pageSize=${PAGE_SIZE}&pageNumber=${page}&sortOptionKey=RatingValue&sortDirection=asc`,
     {headers:{"x-api-version":"2"}}
   );
+
   const data=await res.json();
+
+  if(DEBUG){
+    console.log("API PAGE", page, data.establishments);
+  }
 
   data.establishments.forEach(e=>{
     if(!e.geocode?.latitude) return;
     if(!ALLOWED.has(e.BusinessType)) return;
+
     const d=distance(userLat,userLon,e.geocode.latitude,e.geocode.longitude);
     allPlaces.push({...e,distance:d});
   });
 
   allPlaces.sort((a,b)=>a.distance-b.distance);
+
   page++;
   render();
   showLoader(false);
@@ -304,93 +220,24 @@ function render(){
 
   document.getElementById("list").innerHTML=
     currentPlaces.map((p,i)=>`
-      <div class="card" onclick="openDetail(${i})">
+      <div class="card">
         <div>
           <h3>${escapeHtml(p.BusinessName)}</h3>
-          <div class="meta">${p.distance.toFixed(2)} miles • ${escapeHtml(p.BusinessType)}</div>
+          <div class="meta">
+            ${p.distance.toFixed(2)} miles • 
+            ${escapeHtml(p.BusinessType)} • 
+            Rating: ${escapeHtml(p.RatingValue)}
+          </div>
+
+          ${DEBUG ? `
+            <pre>${escapeHtml(JSON.stringify(p,null,2))}</pre>
+          ` : ``}
         </div>
         <img class="badge" src="${badge(p.RatingValue)}">
       </div>
     `).join("");
 }
 
-function openDetail(index){
-  const p = currentPlaces[index];
-
-  document.getElementById("detailContent").innerHTML=`
-    <div class="card" style="cursor:default;">
-      <div>
-        <h3>${escapeHtml(p.BusinessName)}</h3>
-        <div class="meta">${escapeHtml(address(p))}</div>
-        <div class="meta">${p.distance.toFixed(2)} miles • ${escapeHtml(p.BusinessType)}</div>
-      </div>
-      <img class="badge" src="${badge(p.RatingValue)}">
-    </div>
-  `;
-
-  document.getElementById("detailModal").classList.add("active");
-}
-
-function closeDetail(){
-  document.getElementById("detailModal").classList.remove("active");
-}
-
-/* SEARCH */
-document.getElementById("openSearch").onclick=()=>{
-  document.getElementById("searchModal").classList.add("active");
-};
-
-function closeSearch(){
-  document.getElementById("searchModal").classList.remove("active");
-}
-
-document.getElementById("searchInput").addEventListener("input", async e=>{
-  const value=e.target.value.trim();
-  if(!value) return;
-
-  const res=await fetch(
-    `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(value)}&pageSize=20`,
-    {headers:{"x-api-version":"2"}}
-  );
-  const data=await res.json();
-
-  const filtered=data.establishments
-    .filter(p=>ALLOWED.has(p.BusinessType))
-    .slice(0,5);
-
-  window.searchResultsData = filtered;
-
-  document.getElementById("searchResults").innerHTML=
-    filtered.map((p,i)=>`
-      <div class="card" onclick="openSearchDetail(${i})">
-        <div>
-          <h3>${escapeHtml(p.BusinessName)}</h3>
-          <div class="meta">${escapeHtml(p.BusinessType)}</div>
-        </div>
-        <img class="badge" src="${badge(p.RatingValue)}">
-      </div>
-    `).join("");
-});
-
-function openSearchDetail(index){
-  const p = window.searchResultsData[index];
-  closeSearch();
-
-  document.getElementById("detailContent").innerHTML=`
-    <div class="card" style="cursor:default;">
-      <div>
-        <h3>${escapeHtml(p.BusinessName)}</h3>
-        <div class="meta">${escapeHtml(address(p))}</div>
-        <div class="meta">${escapeHtml(p.BusinessType)}</div>
-      </div>
-      <img class="badge" src="${badge(p.RatingValue)}">
-    </div>
-  `;
-
-  document.getElementById("detailModal").classList.add("active");
-}
-
-/* LOAD MORE */
 document.getElementById("loadMoreBtn").onclick=()=>{
   displayCount+=15;
   if(displayCount>allPlaces.length){
@@ -405,11 +252,6 @@ navigator.geolocation.getCurrentPosition(pos=>{
   userLon=pos.coords.longitude;
   fetchNextPage();
 });
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
 </script>
 
 </body>
