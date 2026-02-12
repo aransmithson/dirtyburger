@@ -1,365 +1,415 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CleanPlate</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Dirty Burgers</title>
 
-<meta name="theme-color" content="#0ea5e9">
+<meta name="theme-color" content="#0ea5e9" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Dirty Burgers" />
+
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+<meta name="theme-color" content="#0ea5e9" />
 
 <style>
 :root{
-  --bg:#f1f5f9;
-  --card:#ffffff;
-  --border:#e2e8f0;
-  --text:#0f172a;
-  --muted:#64748b;
-  --accent:#0ea5e9;
+  --bg:#070A12;
+  --glass:rgba(255,255,255,0.08);
+  --stroke:rgba(255,255,255,0.14);
+  --text:#ffffff;
+  --muted:rgba(255,255,255,0.65);
+  --radius:24px;
 }
 
 *{box-sizing:border-box;}
 
 body{
   margin:0;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  font-size:16px;
+  background:radial-gradient(circle at 20% 0%,#0ea5e922,transparent 60%),
+             radial-gradient(circle at 80% 10%,#22c55e22,transparent 60%),
+             var(--bg);
   color:var(--text);
 }
 
 /* HEADER */
-.app-header{
+header{
+  padding:24px 22px 20px;
+  backdrop-filter:blur(20px);
+  background:rgba(7,10,18,0.9);
+  border-bottom:1px solid var(--stroke);
   position:sticky;
   top:0;
-  z-index:100;
-  padding:16px;
-  background:white;
-  border-bottom:1px solid var(--border);
-  text-align:center;
+  z-index:10;
 }
 
-.app-header h1{
-  margin:0;
-  font-size:20px;
-  font-weight:700;
-  color:var(--accent);
-}
-
-/* MOBILE FIRST LAYOUT */
-.app-body{
-  display:flex;
-  flex-direction:column;
-}
-
-/* SEARCH PANEL */
-.sidebar{
-  background:white;
-  padding:16px;
-  border-bottom:1px solid var(--border);
-}
-
-.sidebar label{
-  font-size:13px;
-  color:var(--muted);
-  display:block;
-  margin-top:14px;
-}
-
-.sidebar select,
-.sidebar input{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  margin-top:6px;
-  font-size:16px;
-}
-
-/* RESULTS */
-.results-area{
-  padding:16px;
-}
-
-.card{
-  background:var(--card);
-  border-radius:18px;
-  padding:18px;
-  margin-bottom:14px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.04);
-  animation:fadeIn 0.25s ease forwards;
-}
-
-.card-inner{
+.brand{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:12px;
 }
 
-.name{
+.logo-wrap{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.logo{
+  font-size:38px;
+}
+
+h1{
+  margin:0;
+  font-size:20px;
+  font-weight:700;
+}
+
+.search-btn{
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  border-radius:999px;
+  padding:10px 16px;
+  font-size:14px;
   font-weight:600;
-  font-size:16px;
+  cursor:pointer;
+}
+
+/* CONTENT */
+main{
+  padding:26px 22px 60px;
+}
+
+.card{
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:18px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 20px 45px rgba(0,0,0,.45);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  cursor:pointer;
+}
+
+.card h3{
+  margin:0;
+  font-size:18px;
+  font-weight:600;
 }
 
 .meta{
-  font-size:13px;
+  margin-top:8px;
+  font-size:14px;
   color:var(--muted);
-  margin-top:4px;
 }
 
-.rating-img{
-  width:80px;
-  flex-shrink:0;
+.badge{
+  width:100px;
 }
 
-.bottom-loader{
+/* LOAD MORE */
+.load-more{
+  margin-top:10px;
+  padding:16px;
   text-align:center;
-  padding:20px;
+  border-radius:999px;
+  border:1px solid var(--stroke);
+  background:var(--glass);
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* BURGER LOADER */
+.loader{
   display:none;
+  text-align:center;
+  margin:30px 0;
 }
 
-.spinner{
-  width:28px;
-  height:28px;
-  border:4px solid #e2e8f0;
-  border-top:4px solid var(--accent);
-  border-radius:50%;
-  margin:auto;
-  animation:spin 1s linear infinite;
+.burger{
+  font-size:50px;
+  animation:bounce 0.8s infinite ease-in-out;
 }
 
-@keyframes spin{ to{transform:rotate(360deg);} }
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(8px);}
-  to{opacity:1; transform:translateY(0);}
+@keyframes bounce{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-18px);}
 }
 
-/* DESKTOP ENHANCEMENT */
-@media(min-width:900px){
-  .app-body{
-    flex-direction:row;
-  }
+/* MODALS */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(10px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s ease;
+  z-index:50;
+}
 
-  .sidebar{
-    width:280px;
-    height:100vh;
-    position:sticky;
-    top:60px;
-    border-right:1px solid var(--border);
-    border-bottom:none;
-  }
+.modal.active{
+  opacity:1;
+  pointer-events:auto;
+}
 
-  .results-area{
-    flex:1;
-    padding:24px;
-  }
+.modal-sheet{
+  width:90%;
+  max-width:520px;
+  background:#0d111b;
+  border-radius:28px;
+  padding:26px;
+  border:1px solid var(--stroke);
+  box-shadow:0 30px 60px rgba(0,0,0,.6);
+}
 
-  .rating-img{
-    width:100px;
-  }
+.close{
+  text-align:right;
+  font-size:14px;
+  margin-bottom:14px;
+  cursor:pointer;
+  color:var(--muted);
+}
+
+.modal input{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.05);
+  color:white;
+  margin-bottom:16px;
 }
 </style>
 </head>
-
 <body>
 
-<header class="app-header">
-  <h1>CleanPlate</h1>
+<header>
+  <div class="brand">
+    <div class="logo-wrap">
+      <div class="logo">🍔</div>
+      <h1>Dirty Burgers</h1>
+    </div>
+    <div class="search-btn" id="openSearch">Search</div>
+  </div>
 </header>
 
-<div class="app-body">
+<main>
+  <div id="list"></div>
 
-  <aside class="sidebar">
-    <label>Mode</label>
-    <select id="modeSelect">
-      <option value="nearby">Nearest Places</option>
-      <option value="name">Search By Name</option>
-    </select>
+  <div class="loader" id="loader">
+    <div class="burger">🍔</div>
+  </div>
 
-    <div id="nameSearchContainer" style="display:none;">
-      <label>Search Name</label>
-      <input type="text" id="textFilter" placeholder="Enter business name">
-    </div>
-  </aside>
+  <div class="load-more" id="loadMoreBtn">Load More</div>
+</main>
 
-  <main class="results-area">
-    <div id="results"></div>
-    <div id="scrollLoader" class="bottom-loader">
-      <div class="spinner"></div>
-    </div>
-  </main>
+<!-- DETAIL MODAL -->
+<div class="modal" id="detailModal">
+  <div class="modal-sheet">
+    <div class="close" onclick="closeDetail()">Close</div>
+    <div id="detailContent"></div>
+  </div>
+</div>
 
+<!-- SEARCH MODAL -->
+<div class="modal" id="searchModal">
+  <div class="modal-sheet">
+    <div class="close" onclick="closeSearch()">Close</div>
+    <input type="text" id="searchInput" placeholder="Search nearby business..." />
+    <div id="searchResults"></div>
+  </div>
 </div>
 
 <script>
-const SEARCH_RADIUS = 10;
+const PAGE_SIZE=200;
+let page=1;
+let userLat,userLon;
+let allPlaces=[];
+let displayCount=15;
+let currentPlaces=[];
 
-const ALLOWED_TYPES = [
+const ALLOWED=new Set([
   "Restaurant/Cafe/Canteen",
   "Pub/bar/nightclub",
   "Takeaway/sandwich shop",
   "Mobile caterer"
-];
+]);
 
-let pageNumber = 1;
-let isLoading = false;
-let hasMore = true;
-let userLat, userLon;
-let allEstablishments = [];
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
 
-const resultsEl = document.getElementById("results");
-const loader = document.getElementById("scrollLoader");
-const textFilter = document.getElementById("textFilter");
-const modeSelect = document.getElementById("modeSelect");
-const nameSearchContainer = document.getElementById("nameSearchContainer");
-
-function calcDistance(lat1,lon1,lat2,lon2){
+function distance(lat1,lon1,lat2,lon2){
   const R=3958.8;
   const dLat=(lat2-lat1)*Math.PI/180;
   const dLon=(lon2-lon1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2+
-    Math.cos(lat1*Math.PI/180)*
-    Math.cos(lat2*Math.PI/180)*
-    Math.sin(dLon/2)**2;
-  return +(R*(2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)))).toFixed(2);
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*(2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
 }
 
-async function fetchNearby(){
-  if(isLoading || !hasMore) return;
-
-  isLoading = true;
-  loader.style.display = "block";
-
-  try{
-    const res = await fetch(
-      `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&maxDistanceLimit=${SEARCH_RADIUS}&pageSize=100&pageNumber=${pageNumber}`,
-      { headers:{"x-api-version":"2"} }
-    );
-
-    const data = await res.json();
-
-    if(!data.establishments.length){
-      hasMore = false;
-    } else {
-
-      const mapped = data.establishments
-        .filter(e => ALLOWED_TYPES.includes(e.BusinessType))
-        .map(e => ({
-          ...e,
-          distance: e.geocode?.latitude
-            ? Number(calcDistance(
-                userLat,
-                userLon,
-                e.geocode.latitude,
-                e.geocode.longitude
-              ))
-            : 9999
-        }));
-
-      // 🔥 Sort this batch by distance first
-      mapped.sort((a,b)=> a.distance - b.distance);
-
-      // Merge
-      allEstablishments = [...allEstablishments, ...mapped];
-
-      // 🔥 Sort full dataset again
-      allEstablishments.sort((a,b)=> a.distance - b.distance);
-
-      pageNumber++;
-      render(allEstablishments);
-    }
-
-  }catch(err){
-    console.error(err);
-  }
-
-  isLoading = false;
-  loader.style.display = "none";
+function badge(r){
+  const n=Number(r);
+  return !isNaN(n)?`images/fhrs_${n}_en-gb.svg`:`images/fhrs_exempt_en-gb.svg`;
 }
 
-async function searchByName(query){
-  if(!query) return;
-
-  resultsEl.innerHTML = "";
-  loader.style.display = "block";
-
-  try{
-    const res = await fetch(
-      `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(query)}&pageSize=50`,
-      { headers:{"x-api-version":"2"} }
-    );
-
-    const data = await res.json();
-    render(data.establishments);
-
-  }catch(err){
-    console.error(err);
-  }
-
-  loader.style.display = "none";
+function address(p){
+  return [p.AddressLine1,p.AddressLine2,p.AddressLine3,p.PostCode]
+    .filter(Boolean)
+    .join(", ");
 }
 
-function render(list){
-  resultsEl.innerHTML = "";
+function showLoader(show){
+  document.getElementById("loader").style.display=show?"block":"none";
+}
 
-  list.forEach(e=>{
-    const badge = !isNaN(Number(e.RatingValue))
-      ? `images/fhrs_${e.RatingValue}_en-gb.svg`
-      : `images/fhrs_exempt_en-gb.svg`;
+async function fetchNextPage(){
+  showLoader(true);
 
-    resultsEl.innerHTML += `
-      <div class="card">
-        <div class="card-inner">
-          <div>
-            <div class="name">${e.BusinessName}</div>
-            <div class="meta">
-              ${e.distance ?? "?"} miles • ${e.BusinessType}
-            </div>
-          </div>
-          <img class="rating-img" src="${badge}">
-        </div>
-      </div>
-    `;
+  const res=await fetch(
+    `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&pageSize=${PAGE_SIZE}&pageNumber=${page}`,
+    {headers:{"x-api-version":"2"}}
+  );
+  const data=await res.json();
+
+  data.establishments.forEach(e=>{
+    if(!e.geocode?.latitude) return;
+    if(!ALLOWED.has(e.BusinessType)) return;
+    const d=distance(userLat,userLon,e.geocode.latitude,e.geocode.longitude);
+    allPlaces.push({...e,distance:d});
   });
+
+  allPlaces.sort((a,b)=>a.distance-b.distance);
+  page++;
+  render();
+  showLoader(false);
 }
 
-modeSelect.addEventListener("change", ()=>{
-  resultsEl.innerHTML = "";
-  allEstablishments = [];
-  pageNumber = 1;
-  hasMore = true;
+function render(){
+  currentPlaces = allPlaces.slice(0,displayCount);
 
-  if(modeSelect.value === "name"){
-    nameSearchContainer.style.display = "block";
+  document.getElementById("list").innerHTML=
+    currentPlaces.map((p,i)=>`
+      <div class="card" onclick="openDetail(${i})">
+        <div>
+          <h3>${escapeHtml(p.BusinessName)}</h3>
+          <div class="meta">${p.distance.toFixed(2)} miles • ${escapeHtml(p.BusinessType)}</div>
+        </div>
+        <img class="badge" src="${badge(p.RatingValue)}">
+      </div>
+    `).join("");
+}
+
+function openDetail(index){
+  const p = currentPlaces[index];
+
+  document.getElementById("detailContent").innerHTML=`
+    <div class="card" style="cursor:default;">
+      <div>
+        <h3>${escapeHtml(p.BusinessName)}</h3>
+        <div class="meta">${escapeHtml(address(p))}</div>
+        <div class="meta">${p.distance.toFixed(2)} miles • ${escapeHtml(p.BusinessType)}</div>
+      </div>
+      <img class="badge" src="${badge(p.RatingValue)}">
+    </div>
+  `;
+
+  document.getElementById("detailModal").classList.add("active");
+}
+
+function closeDetail(){
+  document.getElementById("detailModal").classList.remove("active");
+}
+
+/* SEARCH */
+document.getElementById("openSearch").onclick=()=>{
+  document.getElementById("searchModal").classList.add("active");
+};
+
+function closeSearch(){
+  document.getElementById("searchModal").classList.remove("active");
+}
+
+document.getElementById("searchInput").addEventListener("input", async e=>{
+  const value=e.target.value.trim();
+  if(!value) return;
+
+  const res=await fetch(
+    `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(value)}&pageSize=20`,
+    {headers:{"x-api-version":"2"}}
+  );
+  const data=await res.json();
+
+  const filtered=data.establishments
+    .filter(p=>ALLOWED.has(p.BusinessType))
+    .slice(0,5);
+
+  window.searchResultsData = filtered;
+
+  document.getElementById("searchResults").innerHTML=
+    filtered.map((p,i)=>`
+      <div class="card" onclick="openSearchDetail(${i})">
+        <div>
+          <h3>${escapeHtml(p.BusinessName)}</h3>
+          <div class="meta">${escapeHtml(p.BusinessType)}</div>
+        </div>
+        <img class="badge" src="${badge(p.RatingValue)}">
+      </div>
+    `).join("");
+});
+
+function openSearchDetail(index){
+  const p = window.searchResultsData[index];
+  closeSearch();
+
+  document.getElementById("detailContent").innerHTML=`
+    <div class="card" style="cursor:default;">
+      <div>
+        <h3>${escapeHtml(p.BusinessName)}</h3>
+        <div class="meta">${escapeHtml(address(p))}</div>
+        <div class="meta">${escapeHtml(p.BusinessType)}</div>
+      </div>
+      <img class="badge" src="${badge(p.RatingValue)}">
+    </div>
+  `;
+
+  document.getElementById("detailModal").classList.add("active");
+}
+
+/* LOAD MORE */
+document.getElementById("loadMoreBtn").onclick=()=>{
+  displayCount+=15;
+  if(displayCount>allPlaces.length){
+    fetchNextPage();
   } else {
-    nameSearchContainer.style.display = "none";
-
-    navigator.geolocation.getCurrentPosition(pos=>{
-      userLat = pos.coords.latitude;
-      userLon = pos.coords.longitude;
-      fetchNearby();
-    });
+    render();
   }
-});
-
-textFilter.addEventListener("keydown", e=>{
-  if(e.key === "Enter" && modeSelect.value === "name"){
-    searchByName(textFilter.value.trim());
-  }
-});
-
-window.addEventListener("scroll", ()=>{
-  if(modeSelect.value !== "nearby") return;
-
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 200){
-    fetchNearby();
-  }
-});
+};
 
 navigator.geolocation.getCurrentPosition(pos=>{
-  userLat = pos.coords.latitude;
-  userLon = pos.coords.longitude;
-  fetchNearby();
+  userLat=pos.coords.latitude;
+  userLon=pos.coords.longitude;
+  fetchNextPage();
 });
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 
 </body>
