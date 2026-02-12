@@ -51,12 +51,32 @@ header{
   gap:14px;
 }
 
-.logo{ font-size:38px; }
+.logo{
+  font-size:38px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%, 100%{ transform: translateY(0px); }
+  50%{ transform: translateY(-12px); }
+}
 
 h1{
   margin:0;
   font-size:20px;
   font-weight:700;
+}
+
+.logo-wrap{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+}
+
+.tagline{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
 }
 
 .search-btn{
@@ -119,6 +139,53 @@ main{ padding:26px 22px 60px; }
   50%{transform:translateY(-18px);}
 }
 
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(10px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s ease;
+  z-index:50;
+}
+
+.modal.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.modal-sheet{
+  width:90%;
+  max-width:520px;
+  background:#0d111b;
+  border-radius:28px;
+  padding:26px;
+  border:1px solid var(--stroke);
+}
+
+.close{
+  text-align:right;
+  font-size:14px;
+  margin-bottom:14px;
+  cursor:pointer;
+  color:var(--muted);
+}
+
+.modal input{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.05);
+  color:white;
+  margin-bottom:16px;
+}
+
 pre{
   white-space:pre-wrap;
   font-size:12px;
@@ -131,18 +198,40 @@ pre{
 
 <header>
   <div class="brand">
+    
+    <!-- LEFT SIDE -->
     <div class="logo-wrap">
       <div class="logo">🍔</div>
-      <h1>Dirty Burgers</h1>
+
+      <div>
+        <h1>Dirty Burgers</h1>
+        <div class="tagline">
+          Food Hygiene Ratings for Nearby Eateries
+        </div>
+      </div>
     </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="search-btn" id="openSearch">Search</div>
+
   </div>
 </header>
+
 
 <main>
   <div id="list"></div>
   <div class="loader" id="loader"><div class="burger">🍔</div></div>
   <div class="load-more" id="loadMoreBtn">Load More</div>
 </main>
+
+<!-- SEARCH MODAL -->
+<div class="modal" id="searchModal">
+  <div class="modal-sheet">
+    <div class="close" onclick="closeSearch()">Close</div>
+    <input type="text" id="searchInput" placeholder="Search nearby business..." />
+    <div id="searchResults"></div>
+  </div>
+</div>
 
 <script>
 const DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
@@ -151,7 +240,7 @@ const PAGE_SIZE=200;
 let page=1;
 let userLat,userLon;
 let allPlaces=[];
-let displayCount=20;
+let displayCount=15;
 let currentPlaces=[];
 
 const ALLOWED=new Set([
@@ -219,19 +308,16 @@ function render(){
   currentPlaces = allPlaces.slice(0,displayCount);
 
   document.getElementById("list").innerHTML=
-    currentPlaces.map((p,i)=>`
+    currentPlaces.map((p)=>`
       <div class="card">
         <div>
           <h3>${escapeHtml(p.BusinessName)}</h3>
           <div class="meta">
             ${p.distance.toFixed(2)} miles • 
             ${escapeHtml(p.BusinessType)} • 
-            ${escapeHtml(p.AddressLine2)}
+            Rating: ${escapeHtml(p.AddressLine2)}
           </div>
-
-          ${DEBUG ? `
-            <pre>${escapeHtml(JSON.stringify(p,null,2))}</pre>
-          ` : ``}
+          ${DEBUG ? `<pre>${escapeHtml(JSON.stringify(p,null,2))}</pre>` : ``}
         </div>
         <img class="badge" src="${badge(p.RatingValue)}">
       </div>
@@ -247,11 +333,73 @@ document.getElementById("loadMoreBtn").onclick=()=>{
   }
 };
 
+// Show loader immediately on page load
+showLoader(true);
+
 navigator.geolocation.getCurrentPosition(pos=>{
   userLat=pos.coords.latitude;
   userLon=pos.coords.longitude;
   fetchNextPage();
+}, error=>{
+  // Handle geolocation error
+  showLoader(false);
+  alert('Unable to get your location. Please enable location access.');
 });
+
+/* SEARCH */
+document.getElementById("openSearch").onclick=()=>{
+  document.getElementById("searchModal").classList.add("active");
+};
+
+function closeSearch(){
+  document.getElementById("searchModal").classList.remove("active");
+}
+
+document.getElementById("searchInput").addEventListener("input", async e=>{
+  const value=e.target.value.trim();
+  if(!value) return;
+
+  const res=await fetch(
+    `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(value)}&pageSize=20`,
+    {headers:{"x-api-version":"2"}}
+  );
+  const data=await res.json();
+
+  const filtered=data.establishments
+    .filter(p=>ALLOWED.has(p.BusinessType))
+    .slice(0,5);
+
+  document.getElementById("searchResults").innerHTML=
+    filtered.map(p=>`
+      <div class="card">
+        <div>
+          <h3>${escapeHtml(p.BusinessName)}</h3>
+          <div class="meta">${escapeHtml(p.BusinessType)} • Rating: ${escapeHtml(p.RatingValue)}</div>
+        </div>
+        <img class="badge" src="${badge(p.RatingValue)}">
+      </div>
+    `).join("");
+});
+
+// Floating logo animation
+const logo = document.querySelector('.logo');
+
+function randomSpin(){
+  logo.style.transition = 'transform 0.6s ease-in-out';
+  logo.style.transform = 'rotate(360deg)';
+  
+  setTimeout(()=>{
+    logo.style.transition = 'none';
+    logo.style.transform = 'rotate(0deg)';
+  }, 600);
+  
+  // Schedule next spin randomly within next minute
+  const nextSpin = Math.random() * 60000; // 0-60 seconds
+  setTimeout(randomSpin, nextSpin);
+}
+
+// Start random spinning
+setTimeout(randomSpin, Math.random() * 60000);
 </script>
 
 </body>
