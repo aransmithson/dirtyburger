@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanPlate</title>
+
+<meta name="theme-color" content="#0ea5e9">
+
+<style>
+:root{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --border:#e2e8f0;
+  --text:#0f172a;
+  --muted:#64748b;
+  --accent:#0ea5e9;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+.app-header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  padding:16px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+}
+
+.app-header h1{
+  margin:0;
+  font-size:20px;
+  font-weight:700;
+  color:var(--accent);
+}
+
+/* MOBILE FIRST LAYOUT */
+.app-body{
+  display:flex;
+  flex-direction:column;
+}
+
+/* SEARCH PANEL */
+.sidebar{
+  background:white;
+  padding:16px;
+  border-bottom:1px solid var(--border);
+}
+
+.sidebar label{
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin-top:14px;
+}
+
+.sidebar select,
+.sidebar input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  margin-top:6px;
+  font-size:16px;
+}
+
+/* RESULTS */
+.results-area{
+  padding:16px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:14px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.04);
+  animation:fadeIn 0.25s ease forwards;
+}
+
+.card-inner{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.name{
+  font-weight:600;
+  font-size:16px;
+}
+
+.meta{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.rating-img{
+  width:80px;
+  flex-shrink:0;
+}
+
+.bottom-loader{
+  text-align:center;
+  padding:20px;
+  display:none;
+}
+
+.spinner{
+  width:28px;
+  height:28px;
+  border:4px solid #e2e8f0;
+  border-top:4px solid var(--accent);
+  border-radius:50%;
+  margin:auto;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{ to{transform:rotate(360deg);} }
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(8px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* DESKTOP ENHANCEMENT */
+@media(min-width:900px){
+  .app-body{
+    flex-direction:row;
+  }
+
+  .sidebar{
+    width:280px;
+    height:100vh;
+    position:sticky;
+    top:60px;
+    border-right:1px solid var(--border);
+    border-bottom:none;
+  }
+
+  .results-area{
+    flex:1;
+    padding:24px;
+  }
+
+  .rating-img{
+    width:100px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="app-header">
+  <h1>CleanPlate</h1>
+</header>
+
+<div class="app-body">
+
+  <aside class="sidebar">
+    <label>Mode</label>
+    <select id="modeSelect">
+      <option value="nearby">Nearest Places</option>
+      <option value="name">Search By Name</option>
+    </select>
+
+    <div id="nameSearchContainer" style="display:none;">
+      <label>Search Name</label>
+      <input type="text" id="textFilter" placeholder="Enter business name">
+    </div>
+  </aside>
+
+  <main class="results-area">
+    <div id="results"></div>
+    <div id="scrollLoader" class="bottom-loader">
+      <div class="spinner"></div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+const SEARCH_RADIUS = 10;
+
+const ALLOWED_TYPES = [
+  "Restaurant/Cafe/Canteen",
+  "Pub/bar/nightclub",
+  "Takeaway/sandwich shop",
+  "Mobile caterer"
+];
+
+let pageNumber = 1;
+let isLoading = false;
+let hasMore = true;
+let userLat, userLon;
+let allEstablishments = [];
+
+const resultsEl = document.getElementById("results");
+const loader = document.getElementById("scrollLoader");
+const textFilter = document.getElementById("textFilter");
+const modeSelect = document.getElementById("modeSelect");
+const nameSearchContainer = document.getElementById("nameSearchContainer");
+
+function calcDistance(lat1,lon1,lat2,lon2){
+  const R=3958.8;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+
+    Math.cos(lat1*Math.PI/180)*
+    Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLon/2)**2;
+  return +(R*(2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)))).toFixed(2);
+}
+
+async function fetchNearby(){
+  if(isLoading || !hasMore) return;
+
+  isLoading = true;
+  loader.style.display = "block";
+
+  try{
+    const res = await fetch(
+      `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&maxDistanceLimit=${SEARCH_RADIUS}&pageSize=100&pageNumber=${pageNumber}`,
+      { headers:{"x-api-version":"2"} }
+    );
+
+    const data = await res.json();
+
+    if(!data.establishments.length){
+      hasMore = false;
+    } else {
+
+      const mapped = data.establishments
+        .filter(e => ALLOWED_TYPES.includes(e.BusinessType))
+        .map(e => ({
+          ...e,
+          distance: e.geocode?.latitude
+            ? Number(calcDistance(
+                userLat,
+                userLon,
+                e.geocode.latitude,
+                e.geocode.longitude
+              ))
+            : 9999
+        }));
+
+      // 🔥 Sort this batch by distance first
+      mapped.sort((a,b)=> a.distance - b.distance);
+
+      // Merge
+      allEstablishments = [...allEstablishments, ...mapped];
+
+      // 🔥 Sort full dataset again
+      allEstablishments.sort((a,b)=> a.distance - b.distance);
+
+      pageNumber++;
+      render(allEstablishments);
+    }
+
+  }catch(err){
+    console.error(err);
+  }
+
+  isLoading = false;
+  loader.style.display = "none";
+}
+
+async function searchByName(query){
+  if(!query) return;
+
+  resultsEl.innerHTML = "";
+  loader.style.display = "block";
+
+  try{
+    const res = await fetch(
+      `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(query)}&pageSize=50`,
+      { headers:{"x-api-version":"2"} }
+    );
+
+    const data = await res.json();
+    render(data.establishments);
+
+  }catch(err){
+    console.error(err);
+  }
+
+  loader.style.display = "none";
+}
+
+function render(list){
+  resultsEl.innerHTML = "";
+
+  list.forEach(e=>{
+    const badge = !isNaN(Number(e.RatingValue))
+      ? `images/fhrs_${e.RatingValue}_en-gb.svg`
+      : `images/fhrs_exempt_en-gb.svg`;
+
+    resultsEl.innerHTML += `
+      <div class="card">
+        <div class="card-inner">
+          <div>
+            <div class="name">${e.BusinessName}</div>
+            <div class="meta">
+              ${e.distance ?? "?"} miles • ${e.BusinessType}
+            </div>
+          </div>
+          <img class="rating-img" src="${badge}">
+        </div>
+      </div>
+    `;
+  });
+}
+
+modeSelect.addEventListener("change", ()=>{
+  resultsEl.innerHTML = "";
+  allEstablishments = [];
+  pageNumber = 1;
+  hasMore = true;
+
+  if(modeSelect.value === "name"){
+    nameSearchContainer.style.display = "block";
+  } else {
+    nameSearchContainer.style.display = "none";
+
+    navigator.geolocation.getCurrentPosition(pos=>{
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+      fetchNearby();
+    });
+  }
+});
+
+textFilter.addEventListener("keydown", e=>{
+  if(e.key === "Enter" && modeSelect.value === "name"){
+    searchByName(textFilter.value.trim());
+  }
+});
+
+window.addEventListener("scroll", ()=>{
+  if(modeSelect.value !== "nearby") return;
+
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 200){
+    fetchNearby();
+  }
+});
+
+navigator.geolocation.getCurrentPosition(pos=>{
+  userLat = pos.coords.latitude;
+  userLon = pos.coords.longitude;
+  fetchNearby();
+});
+</script>
+
+</body>
+</html>
