@@ -928,17 +928,29 @@
             const data = await response.json();
 
             if (data.establishments && data.establishments.length > 0) {
-              const establishments = data.establishments.map(est => ({
-                ...est,
-                distance: est.geocode?.latitude && est.geocode?.longitude
-                  ? calculateDistance(
-                      latitude,
-                      longitude,
-                      est.geocode.latitude,
-                      est.geocode.longitude
-                    )
-                  : null
-              })).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+              const allowedTypes = [
+  'Restaurant/Cafe/Canteen',
+  'Takeaway/sandwich shop',
+  'Pub/bar/nightclub',
+  'Mobile caterer',
+  'Retailers - other'
+];
+
+const establishments = data.establishments
+  .filter(est => allowedTypes.includes(est.BusinessType))
+  .map(est => ({
+    ...est,
+    distance: est.geocode?.latitude && est.geocode?.longitude
+      ? calculateDistance(
+          latitude,
+          longitude,
+          est.geocode.latitude,
+          est.geocode.longitude
+        )
+      : null
+  }))
+  .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+
 
               state.results = establishments;
               playSound('success');
