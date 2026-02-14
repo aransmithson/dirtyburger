@@ -1,500 +1,1009 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Dirty Burgers</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dirty Burgers - Food Hygiene Ratings</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<meta name="theme-color" content="#0ea5e9" />
-<link rel="manifest" href="manifest.json" />
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-<style>
-:root{
-  --bg:#070A12;
-  --glass:rgba(255,255,255,0.08);
-  --stroke:rgba(255,255,255,0.14);
-  --text:#ffffff;
-  --muted:rgba(255,255,255,0.65);
-  --radius:24px;
-}
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #ffffff;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.15);
+      position: relative;
+    }
 
-*{box-sizing:border-box;}
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 24px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  background:radial-gradient(circle at 20% 0%,#0ea5e922,transparent 60%),
-             radial-gradient(circle at 80% 10%,#22c55e22,transparent 60%),
-             var(--bg);
-  color:var(--text);
-}
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 30px 30px;
+      animation: drift 20s linear infinite;
+    }
 
-header{
-  padding:24px 22px 20px;
-  backdrop-filter:blur(20px);
-  background:rgba(7,10,18,0.9);
-  border-bottom:1px solid var(--stroke);
-  position:sticky;
-  top:0;
-  z-index:10;
-}
+    @keyframes drift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(30px, 30px); }
+    }
 
-.brand{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+    .header-content {
+      position: relative;
+      z-index: 1;
+    }
 
-.logo-wrap{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
+    .app-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      letter-spacing: -0.5px;
+    }
 
-.logo{
-  font-size:38px;
-  animation: float 3s ease-in-out infinite;
-}
+    .app-subtitle {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
 
-@keyframes float{
-  0%, 100%{ transform: translateY(0px); }
-  50%{ transform: translateY(-12px); }
-}
+    .tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
 
-h1{
-  margin:0;
-  font-size:20px;
-  font-weight:700;
-}
+    .tab {
+      flex: 1;
+      padding: 16px;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #6c757d;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
 
-.logo-wrap{
-  display:flex;
-  align-items:flex-start;
-  gap:14px;
-}
+    .tab.active {
+      color: #667eea;
+    }
 
-.tagline{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:4px;
-}
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #667eea;
+      animation: slideIn 0.3s ease;
+    }
 
-.search-btn{
-  background:var(--glass);
-  border:1px solid var(--stroke);
-  border-radius:999px;
-  padding:10px 16px;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-}
+    @keyframes slideIn {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
 
-main{ padding:26px 22px 60px; }
+    .content {
+      padding: 24px;
+    }
 
-.card{
-  background:var(--glass);
-  border:1px solid var(--stroke);
-  border-radius:var(--radius);
-  padding:22px;
-  margin-bottom:18px;
-  backdrop-filter:blur(20px);
-  box-shadow:0 20px 45px rgba(0,0,0,.45);
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:16px;
-  cursor:pointer;
-}
+    .search-section {
+      animation: fadeIn 0.4s ease;
+    }
 
-.card h3{ margin:0; font-size:18px; font-weight:600; }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-.meta{ margin-top:8px; font-size:14px; color:var(--muted); }
+    .input-group {
+      margin-bottom: 16px;
+    }
 
-.badge{ width:100px; }
+    .input-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 8px;
+    }
 
-.load-more{
-  margin-top:10px;
-  padding:16px;
-  text-align:center;
-  border-radius:999px;
-  border:1px solid var(--stroke);
-  background:var(--glass);
-  cursor:pointer;
-  font-weight:600;
-}
+    .input-wrapper {
+      position: relative;
+    }
 
-.loader{
-  display:none;
-  text-align:center;
-  margin:30px 0;
-}
+    .input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #adb5bd;
+      width: 20px;
+      height: 20px;
+    }
 
-.burger{
-  font-size:50px;
-  animation:bounce 0.8s infinite ease-in-out;
-}
+    .input {
+      width: 100%;
+      padding: 14px 16px 14px 46px;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: #ffffff;
+    }
 
-@keyframes bounce{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(-18px);}
-}
+    .input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
 
-/* MODAL */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.7);
-  backdrop-filter:blur(10px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s ease;
-  z-index:50;
-}
+    .button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
 
-.modal.active{
-  opacity:1;
-  pointer-events:auto;
-}
+    .button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: left 0.3s ease;
+    }
 
-.modal-sheet{
-  width:90%;
-  max-width:520px;
-  background:#0d111b;
-  border-radius:28px;
-  padding:26px;
-  border:1px solid var(--stroke);
-}
+    .button:hover::before {
+      left: 100%;
+    }
 
-.close{
-  text-align:right;
-  font-size:14px;
-  margin-bottom:14px;
-  cursor:pointer;
-  color:var(--muted);
-}
+    .button-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
 
-.modal input{
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background:rgba(255,255,255,.05);
-  color:white;
-  margin-bottom:16px;
-}
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
 
-pre{
-  white-space:pre-wrap;
-  font-size:12px;
-  opacity:.7;
-  margin-top:12px;
-}
-</style>
+    .button-primary:active {
+      transform: translateY(0);
+    }
+
+    .button-secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+      margin-top: 12px;
+    }
+
+    .button-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(240, 147, 251, 0.5);
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .loader {
+      animation: spin 1s linear infinite;
+      width: 20px;
+      height: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error {
+      background: #fff5f5;
+      border: 2px solid #fc8181;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #c53030;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .results {
+      margin-top: 24px;
+    }
+
+    .results-header {
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .results-count {
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    .result-card {
+      background: #ffffff;
+      border: 2px solid #e9ecef;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      animation: slideUp 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    .result-card:hover {
+      border-color: #667eea;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+      transform: translateY(-4px);
+    }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-card:nth-child(1) { animation-delay: 0.05s; }
+    .result-card:nth-child(2) { animation-delay: 0.1s; }
+    .result-card:nth-child(3) { animation-delay: 0.15s; }
+    .result-card:nth-child(4) { animation-delay: 0.2s; }
+    .result-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .result-name {
+      font-family: 'Nunito', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #212529;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .rating-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 70px;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 3px solid;
+      animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(0);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .rating-number {
+      font-family: 'Nunito', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .rating-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .result-address {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 14px;
+      color: #6c757d;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .result-distance {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e7f5ff;
+      color: #1971c2;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .result-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #868e96;
+    }
+
+    .result-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .empty-state-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .empty-state-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #495057;
+      margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #dee2e6;
+    }
+
+    .divider-text {
+      display: inline-block;
+      background: white;
+      padding: 0 16px;
+      color: #868e96;
+      font-size: 14px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
 </head>
 <body>
-
-<header>
-  <div class="brand">
-    
-    <!-- LEFT SIDE -->
-    <div class="logo-wrap">
-      <div class="logo">🍔</div>
-
-      <div>
-        <h1>Dirty Burgers</h1>
-        <div class="tagline">
-          Food Hygiene Ratings for Nearby Eateries
-        </div>
+  <div class="app-container">
+    <div class="header">
+      <div class="header-content">
+        <h1 class="app-title">🍔 Dirty Burgers</h1>
+        <p class="app-subtitle">Check hygiene ratings before you eat</p>
       </div>
     </div>
 
-    <!-- RIGHT SIDE -->
-    <div class="search-btn" id="openSearch">Search</div>
+    <div class="tabs">
+      <button class="tab active" id="searchTab">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        Search
+      </button>
+      <button class="tab" id="nearbyTab">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+        </svg>
+        Near Me
+      </button>
+    </div>
 
-  </div>
-</header>
+    <div class="content">
+      <div id="errorContainer"></div>
 
-
-<main>
-  <div id="list"></div>
-  <div class="loader" id="loader"><div class="burger">🍔</div></div>
-  <div class="load-more" id="loadMoreBtn">Load More</div>
-</main>
-
-<!-- SEARCH MODAL -->
-<div class="modal" id="searchModal">
-  <div class="modal-sheet">
-    <div class="close" onclick="closeSearch()">✕ Close</div>
-    <input type="text" id="searchInput" placeholder="Search nearby business..." />
-    <div id="searchResults"></div>
-  </div>
-</div>
-
-<!-- DETAILS MODAL -->
-<div class="modal" id="detailsModal">
-  <div class="modal-sheet">
-    <div class="close" onclick="closeDetails()">✕ Close</div>
-    <div id="detailsContent"></div>
-  </div>
-</div>
-
-<script>
-const DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
-
-const PAGE_SIZE=200;
-let page=1;
-let userLat,userLon;
-let allPlaces=[];
-let displayCount=15;
-let currentPlaces=[];
-
-const ALLOWED=new Set([
-  "Restaurant/Cafe/Canteen",
-  "Pub/bar/nightclub",
-  "Takeaway/sandwich shop",
-  "Mobile caterer"
-]);
-
-function escapeHtml(str){
-  return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
-}
-
-function distance(lat1,lon1,lat2,lon2){
-  const R=3958.8;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+
-    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*(2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
-}
-
-function badge(r){
-  const n=Number(r);
-  return !isNaN(n)?`images/fhrs_${n}_en-gb.svg`:`images/fhrs_exempt_en-gb.svg`;
-}
-
-function showLoader(show){
-  document.getElementById("loader").style.display=show?"block":"none";
-}
-
-async function fetchNextPage(){
-  showLoader(true);
-
-  const res=await fetch(
-    `https://api.ratings.food.gov.uk/Establishments?latitude=${userLat}&longitude=${userLon}&pageSize=${PAGE_SIZE}&pageNumber=${page}`,
-    {headers:{"x-api-version":"2"}}
-  );
-
-  const data=await res.json();
-
-  if(DEBUG){
-    console.log("API PAGE", page, data.establishments);
-  }
-
-  data.establishments.forEach(e=>{
-    if(!e.geocode?.latitude) return;
-    if(!ALLOWED.has(e.BusinessType)) return;
-
-    const d=distance(userLat,userLon,e.geocode.latitude,e.geocode.longitude);
-    allPlaces.push({...e,distance:d});
-  });
-
-  allPlaces.sort((a,b)=>a.distance-b.distance);
-
-  page++;
-  render();
-  showLoader(false);
-}
-
-function render(){
-  currentPlaces = allPlaces.slice(0,displayCount);
-
-  document.getElementById("list").innerHTML=
-    currentPlaces.map((p,i)=>`
-      <div class="card" onclick="showDetails(${i}, 'nearby')">
-        <div>
-          <h3>${escapeHtml(p.BusinessName)}</h3>
-          <div class="meta">
-            ${p.distance.toFixed(2)} miles • 
-            ${escapeHtml(p.BusinessType)} • 
-            ${escapeHtml(p.AddressLine2)}
+      <!-- Search Section -->
+      <div class="search-section" id="searchSection">
+        <div class="input-group">
+          <label class="input-label">Business Name *</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              class="input"
+              id="searchName"
+              placeholder="e.g., Pizza Express, Costa Coffee"
+            />
           </div>
-          ${DEBUG ? `<pre>${escapeHtml(JSON.stringify(p,null,2))}</pre>` : ``}
         </div>
-        <img class="badge" src="${badge(p.RatingValue)}">
-      </div>
-    `).join("");
-}
 
-document.getElementById("loadMoreBtn").onclick=()=>{
-  displayCount+=15;
-  if(displayCount>allPlaces.length){
-    fetchNextPage();
-  } else {
-    render();
-  }
-};
-
-// Show loader immediately on page load
-showLoader(true);
-
-navigator.geolocation.getCurrentPosition(pos=>{
-  userLat=pos.coords.latitude;
-  userLon=pos.coords.longitude;
-  fetchNextPage();
-}, error=>{
-  // Handle geolocation error
-  showLoader(false);
-  alert('Unable to get your location. Please enable location access.');
-});
-
-/* SEARCH */
-let searchResults = [];
-
-document.getElementById("openSearch").onclick=()=>{
-  document.getElementById("searchModal").classList.add("active");
-  document.getElementById("searchInput").focus();
-};
-
-function closeSearch(){
-  document.getElementById("searchModal").classList.remove("active");
-  document.getElementById("searchInput").value = '';
-  document.getElementById("searchResults").innerHTML = '';
-}
-
-// Close modal when clicking outside
-document.getElementById("searchModal").onclick=(e)=>{
-  if(e.target.id === "searchModal"){
-    closeSearch();
-  }
-};
-
-document.getElementById("searchInput").addEventListener("input", async e=>{
-  const value=e.target.value.trim();
-  
-  if(!value){
-    document.getElementById("searchResults").innerHTML = '';
-    return;
-  }
-
-  const res=await fetch(
-    `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(value)}&pageSize=20`,
-    {headers:{"x-api-version":"2"}}
-  );
-  const data=await res.json();
-
-  searchResults = data.establishments
-    .filter(p=>ALLOWED.has(p.BusinessType))
-    .slice(0,5);
-
-  document.getElementById("searchResults").innerHTML=
-    searchResults.map((p,i)=>`
-      <div class="card" onclick="showDetails(${i}, 'search')">
-        <div>
-          <h3>${escapeHtml(p.BusinessName)}</h3>
-          <div class="meta">${escapeHtml(p.BusinessType)} • Rating: ${escapeHtml(p.RatingValue)}</div>
-        </div>
-        <img class="badge" src="${badge(p.RatingValue)}">
-      </div>
-    `).join("");
-});
-
-/* DETAILS MODAL */
-function closeDetails(){
-  document.getElementById("detailsModal").classList.remove("active");
-}
-
-document.getElementById("detailsModal").onclick=(e)=>{
-  if(e.target.id === "detailsModal"){
-    closeDetails();
-  }
-};
-
-function showDetails(index, source){
-  const p = source === 'search' ? searchResults[index] : currentPlaces[index];
-  
-  // Calculate distance if not already available (for search results)
-  if(!p.distance && p.geocode?.latitude){
-    p.distance = distance(userLat, userLon, p.geocode.latitude, p.geocode.longitude);
-  }
-  
-  // Format the rating date
-  let ratingDateText = 'Not available';
-  if(p.RatingDate){
-    const date = new Date(p.RatingDate);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    ratingDateText = date.toLocaleDateString('en-GB', options);
-  }
-  
-  document.getElementById("detailsContent").innerHTML=`
-    <div style="text-align:center; margin-bottom:24px;">
-      <img class="badge" src="${badge(p.RatingValue)}" style="width:120px;">
-    </div>
-    
-    <div style="margin-bottom:24px;">
-      <h3 style="margin:0 0 8px 0; font-size:24px; text-align:center;">${escapeHtml(p.BusinessName)}</h3>
-      <div style="text-align:center; font-size:14px; color:var(--muted);">${escapeHtml(p.BusinessType)}</div>
-    </div>
-    
-    <div style="background:var(--glass); border:1px solid var(--stroke); border-radius:16px; padding:20px; margin-bottom:16px;">
-      <div style="font-size:14px; line-height:1.8;">
-        <div style="margin-bottom:12px;">
-          <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Address</div>
-          <div>${escapeHtml(p.AddressLine1 || '')}</div>
-          ${p.AddressLine2 ? `<div>${escapeHtml(p.AddressLine2)}</div>` : ''}
-          ${p.AddressLine3 ? `<div>${escapeHtml(p.AddressLine3)}</div>` : ''}
-          ${p.AddressLine4 ? `<div>${escapeHtml(p.AddressLine4)}</div>` : ''}
-          <div>${escapeHtml(p.PostCode || '')}</div>
-        </div>
-        
-        ${p.distance ? `
-          <div style="margin-bottom:12px;">
-            <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Distance</div>
-            <div>${p.distance.toFixed(2)} miles from your location</div>
+        <div class="input-group">
+          <label class="input-label">Location (Optional)</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <input
+              type="text"
+              class="input"
+              id="searchLocation"
+              placeholder="e.g., London, Manchester, NW1 5LR"
+            />
           </div>
-        ` : ''}
-        
-        <div>
-          <div style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Last Inspection</div>
-          <div>${ratingDateText}</div>
         </div>
+
+        <button class="button button-primary" id="searchButton">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          Search Ratings
+        </button>
+
+        <div class="divider">
+          <span class="divider-text">OR</span>
+        </div>
+
+        <button class="button button-secondary" id="nearMeButton1">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          Find Places Near Me
+        </button>
       </div>
+
+      <!-- Nearby Section -->
+      <div class="search-section hidden" id="nearbySection">
+        <p style="font-size: 15px; color: #6c757d; margin-bottom: 20px; line-height: 1.6;">
+          Click the button below to find food establishments near your current location. We'll search within a 2-mile radius.
+        </p>
+
+        <button class="button button-secondary" id="nearMeButton2">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          Find Places Near Me
+        </button>
+      </div>
+
+      <!-- Results Container -->
+      <div id="resultsContainer"></div>
     </div>
-  `;
-  
-  // Close search modal if open
-  closeSearch();
-  
-  // Open details modal
-  document.getElementById("detailsModal").classList.add("active");
-}
+  </div>
 
-// Floating logo animation
-const logo = document.querySelector('.logo');
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script>
+    // State management
+    let state = {
+      searchName: '',
+      searchLocation: '',
+      results: [],
+      loading: false,
+      error: '',
+      userLocation: null,
+      activeTab: 'search',
+      hasSearched: false
+    };
 
-function randomSpin(){
-  logo.style.transition = 'transform 0.6s ease-in-out';
-  logo.style.transform = 'rotate(360deg)';
-  
-  setTimeout(()=>{
-    logo.style.transition = 'none';
-    logo.style.transform = 'rotate(0deg)';
-  }, 600);
-  
-  // Schedule next spin randomly within next minute
-  const nextSpin = Math.random() * 60000; // 0-60 seconds
-  setTimeout(randomSpin, nextSpin);
-}
+    // Sound setup
+    let synth = null;
 
-// Start random spinning
-setTimeout(randomSpin, Math.random() * 60000);
-</script>
+    // Initialize sound
+    window.addEventListener('DOMContentLoaded', () => {
+      synth = new Tone.Synth({
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+      }).toDestination();
+    });
 
+    // Sound functions
+    function playSound(type) {
+      if (!synth) return;
+      
+      if (type === 'search') {
+        synth.triggerAttackRelease('C5', '0.1');
+      } else if (type === 'success') {
+        synth.triggerAttackRelease('E5', '0.1');
+        setTimeout(() => synth.triggerAttackRelease('G5', '0.1'), 100);
+      } else if (type === 'error') {
+        synth.triggerAttackRelease('E4', '0.2');
+      }
+    }
+
+    // Helper functions
+    function getRatingColor(rating) {
+      if (rating === 5) return '#10b981';
+      if (rating === 4) return '#22c55e';
+      if (rating === 3) return '#eab308';
+      if (rating === 2) return '#f97316';
+      if (rating === 1) return '#ef4444';
+      if (rating === 0) return '#dc2626';
+      return '#6b7280';
+    }
+
+    function getRatingLabel(rating) {
+      if (rating === 5) return 'Very Good';
+      if (rating === 4) return 'Good';
+      if (rating === 3) return 'Satisfactory';
+      if (rating === 2) return 'Improvement Needed';
+      if (rating === 1) return 'Major Improvement';
+      if (rating === 0) return 'Urgent Improvement';
+      return 'Awaiting Inspection';
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 3959; // Radius of Earth in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // UI Update functions
+    function showError(message) {
+      const errorContainer = document.getElementById('errorContainer');
+      errorContainer.innerHTML = `
+        <div class="error">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>${message}</span>
+        </div>
+      `;
+    }
+
+    function clearError() {
+      document.getElementById('errorContainer').innerHTML = '';
+    }
+
+    function setLoading(isLoading) {
+      state.loading = isLoading;
+      const buttons = [
+        document.getElementById('searchButton'),
+        document.getElementById('nearMeButton1'),
+        document.getElementById('nearMeButton2')
+      ];
+
+      buttons.forEach(button => {
+        if (button) {
+          button.disabled = isLoading;
+          if (isLoading) {
+            const originalHTML = button.innerHTML;
+            button.dataset.originalHTML = originalHTML;
+            button.innerHTML = `
+              <svg class="loader" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+              ${button.id === 'searchButton' ? 'Searching...' : 'Finding...'}
+            `;
+          } else {
+            button.innerHTML = button.dataset.originalHTML || button.innerHTML;
+          }
+        }
+      });
+    }
+
+    function renderResults() {
+      const container = document.getElementById('resultsContainer');
+      
+      if (!state.loading && !state.hasSearched) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg style="width: 40px; height: 40px;" fill="none" stroke="white" viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">Ready to Search!</h3>
+            <p class="empty-state-text">
+              Enter a business name or find establishments near you
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!state.loading && state.hasSearched && state.results.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg style="width: 40px; height: 40px;" fill="none" stroke="white" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">No Results Found</h3>
+            <p class="empty-state-text">
+              Try adjusting your search terms or location
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!state.loading && state.results.length > 0) {
+        const resultsHTML = state.results.map((result, index) => {
+          const ratingValue = result.RatingValue === 'AwaitingInspection' 
+            ? null 
+            : parseInt(result.RatingValue);
+          const color = getRatingColor(ratingValue);
+
+          return `
+            <div class="result-card">
+              <div class="result-header">
+                <h3 class="result-name">${result.BusinessName}</h3>
+                <div class="rating-badge" style="border-color: ${color}">
+                  <div class="rating-number" style="color: ${color}">
+                    ${ratingValue !== null ? ratingValue : '?'}
+                  </div>
+                  <div class="rating-label" style="color: ${color}">
+                    ${ratingValue !== null ? 'RATING' : 'PENDING'}
+                  </div>
+                </div>
+              </div>
+
+              <div class="result-address">
+                <svg style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>
+                  ${result.AddressLine1}${result.AddressLine2 ? `, ${result.AddressLine2}` : ''}${result.AddressLine3 ? `, ${result.AddressLine3}` : ''}${result.PostCode ? `, ${result.PostCode}` : ''}
+                </span>
+              </div>
+
+              ${result.distance ? `
+                <div class="result-distance">
+                  <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                  </svg>
+                  ${result.distance.toFixed(2)} miles away
+                </div>
+              ` : ''}
+
+              ${ratingValue !== null ? `
+                <div style="margin-top: 12px; font-size: 14px; font-weight: 600; color: ${color}">
+                  ${getRatingLabel(ratingValue)}
+                </div>
+              ` : ''}
+
+              <div class="result-meta">
+                <div class="result-meta-item">
+                  📅 ${new Date(result.RatingDate).toLocaleDateString('en-GB')}
+                </div>
+                ${result.BusinessType ? `
+                  <div class="result-meta-item">
+                    🏪 ${result.BusinessType}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = `
+          <div class="results">
+            <div class="results-header">
+              Results
+              <span class="results-count">${state.results.length}</span>
+            </div>
+            ${resultsHTML}
+          </div>
+        `;
+      }
+    }
+
+    // API functions
+    async function handleSearch() {
+      const searchName = document.getElementById('searchName').value;
+      
+      if (!searchName.trim()) {
+        showError('Please enter a business name');
+        playSound('error');
+        return;
+      }
+
+      setLoading(true);
+      clearError();
+      state.hasSearched = true;
+      playSound('search');
+
+      try {
+        const searchLocation = document.getElementById('searchLocation').value;
+        let url = `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(searchName)}`;
+        
+        if (searchLocation.trim()) {
+          url += `&address=${encodeURIComponent(searchLocation)}`;
+        }
+
+        const response = await fetch(url, {
+          headers: {
+            'x-api-version': '2'
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch data');
+
+        const data = await response.json();
+        
+        if (data.establishments && data.establishments.length > 0) {
+          let establishments = data.establishments;
+          
+          // If user location is available, calculate distances
+          if (state.userLocation) {
+            establishments = establishments.map(est => ({
+              ...est,
+              distance: est.geocode?.latitude && est.geocode?.longitude
+                ? calculateDistance(
+                    state.userLocation.latitude,
+                    state.userLocation.longitude,
+                    est.geocode.latitude,
+                    est.geocode.longitude
+                  )
+                : null
+            })).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+          }
+          
+          state.results = establishments;
+          playSound('success');
+        } else {
+          state.results = [];
+          showError('No results found');
+          playSound('error');
+        }
+      } catch (err) {
+        showError('Error fetching data. Please try again.');
+        playSound('error');
+        console.error(err);
+      } finally {
+        setLoading(false);
+        renderResults();
+      }
+    }
+
+    async function handleNearMe() {
+      setLoading(true);
+      clearError();
+      state.hasSearched = true;
+      playSound('search');
+
+      if (!navigator.geolocation) {
+        showError('Geolocation is not supported by your browser');
+        setLoading(false);
+        playSound('error');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          state.userLocation = { latitude, longitude };
+
+          try {
+            const url = `https://api.ratings.food.gov.uk/Establishments?longitude=${longitude}&latitude=${latitude}&maxDistanceLimit=2`;
+
+            const response = await fetch(url, {
+              headers: {
+                'x-api-version': '2'
+              }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch data');
+
+            const data = await response.json();
+
+            if (data.establishments && data.establishments.length > 0) {
+              const establishments = data.establishments.map(est => ({
+                ...est,
+                distance: est.geocode?.latitude && est.geocode?.longitude
+                  ? calculateDistance(
+                      latitude,
+                      longitude,
+                      est.geocode.latitude,
+                      est.geocode.longitude
+                    )
+                  : null
+              })).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+
+              state.results = establishments;
+              playSound('success');
+            } else {
+              state.results = [];
+              showError('No establishments found nearby');
+              playSound('error');
+            }
+          } catch (err) {
+            showError('Error fetching nearby locations');
+            playSound('error');
+            console.error(err);
+          } finally {
+            setLoading(false);
+            renderResults();
+          }
+        },
+        (err) => {
+          showError('Unable to access your location');
+          setLoading(false);
+          playSound('error');
+          console.error(err);
+        }
+      );
+    }
+
+    // Tab switching
+    function switchTab(tab) {
+      state.activeTab = tab;
+      
+      const searchTab = document.getElementById('searchTab');
+      const nearbyTab = document.getElementById('nearbyTab');
+      const searchSection = document.getElementById('searchSection');
+      const nearbySection = document.getElementById('nearbySection');
+
+      if (tab === 'search') {
+        searchTab.classList.add('active');
+        nearbyTab.classList.remove('active');
+        searchSection.classList.remove('hidden');
+        nearbySection.classList.add('hidden');
+      } else {
+        searchTab.classList.remove('active');
+        nearbyTab.classList.add('active');
+        searchSection.classList.add('hidden');
+        nearbySection.classList.remove('hidden');
+      }
+    }
+
+    // Event listeners
+    document.getElementById('searchTab').addEventListener('click', () => switchTab('search'));
+    document.getElementById('nearbyTab').addEventListener('click', () => switchTab('nearby'));
+    document.getElementById('searchButton').addEventListener('click', handleSearch);
+    document.getElementById('nearMeButton1').addEventListener('click', handleNearMe);
+    document.getElementById('nearMeButton2').addEventListener('click', handleNearMe);
+
+    // Enter key support
+    document.getElementById('searchName').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSearch();
+    });
+    document.getElementById('searchLocation').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSearch();
+    });
+
+    // Initial render
+    renderResults();
+  </script>
 </body>
 </html>
